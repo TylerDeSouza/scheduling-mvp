@@ -10,29 +10,30 @@ import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgr
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
 
-// ----------------------------------------------------------------------
+import ProtectedRoute from './components/ProtectedRoute';  // ← new import
 
+// Lazy‑loaded pages
 export const DashboardPage = lazy(() => import('src/pages/dashboard'));
-export const BlogPage = lazy(() => import('src/pages/blog'));
-export const UserPage = lazy(() => import('src/pages/user'));
-export const SignInPage = lazy(() => import('src/pages/sign-in'));
-export const ProductsPage = lazy(() => import('src/pages/products'));
-export const Page404 = lazy(() => import('src/pages/page-not-found'));
+export const BlogPage      = lazy(() => import('src/pages/blog'));
+export const UserPage      = lazy(() => import('src/pages/user'));
+export const SignInPage    = lazy(() => import('src/pages/sign-in'));
+export const ProductsPage  = lazy(() => import('src/pages/products'));
+export const Page404       = lazy(() => import('src/pages/page-not-found'));
 
 const renderFallback = () => (
   <Box
     sx={{
-      display: 'flex',
-      flex: '1 1 auto',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display:       'flex',
+      flex:          '1 1 auto',
+      alignItems:    'center',
+      justifyContent:'center',
     }}
   >
     <LinearProgress
       sx={{
-        width: 1,
-        maxWidth: 320,
-        bgcolor: (theme) => varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
+        width:      1,
+        maxWidth:   320,
+        bgcolor:    (theme) => varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
         [`& .${linearProgressClasses.bar}`]: { bgcolor: 'text.primary' },
       }}
     />
@@ -40,21 +41,26 @@ const renderFallback = () => (
 );
 
 export const routesSection: RouteObject[] = [
+  // All dashboard routes now require authentication
   {
     element: (
-      <DashboardLayout>
-        <Suspense fallback={renderFallback()}>
-          <Outlet />
-        </Suspense>
-      </DashboardLayout>
+      <ProtectedRoute>
+        <DashboardLayout>
+          <Suspense fallback={renderFallback()}>
+            <Outlet />
+          </Suspense>
+        </DashboardLayout>
+      </ProtectedRoute>
     ),
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: 'user', element: <UserPage /> },
+      { path: 'user',     element: <UserPage />     },
       { path: 'products', element: <ProductsPage /> },
-      { path: 'blog', element: <BlogPage /> },
+      { path: 'blog',     element: <BlogPage />     },
     ],
   },
+
+  // Public routes
   {
     path: 'sign-in',
     element: (
@@ -67,5 +73,8 @@ export const routesSection: RouteObject[] = [
     path: '404',
     element: <Page404 />,
   },
-  { path: '*', element: <Page404 /> },
+  {
+    path: '*',
+    element: <Page404 />,
+  },
 ];

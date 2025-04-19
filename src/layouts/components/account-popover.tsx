@@ -1,5 +1,6 @@
 import type { IconButtonProps } from '@mui/material/IconButton';
 
+import { signOut } from 'firebase/auth';
 import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
@@ -15,8 +16,8 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { useRouter, usePathname } from 'src/routes/hooks';
 
 import { _myAccount } from 'src/_mock';
+import { firebaseAuth } from 'src/firebase';
 
-// ----------------------------------------------------------------------
 
 export type AccountPopoverProps = IconButtonProps & {
   data?: {
@@ -29,7 +30,6 @@ export type AccountPopoverProps = IconButtonProps & {
 
 export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps) {
   const router = useRouter();
-
   const pathname = usePathname();
 
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
@@ -49,6 +49,16 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
     },
     [handleClosePopover, router]
   );
+
+  const handleLogout = useCallback(async () => {
+    try {
+      handleClosePopover();
+      await signOut(firebaseAuth);
+      router.push('/sign-in');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  }, [handleClosePopover, router]);
 
   return (
     <>
@@ -83,11 +93,10 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
       >
         <Box sx={{ p: 2, pb: 1.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {_myAccount?.displayName}
+            {_myAccount.displayName}
           </Typography>
-
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {_myAccount?.email}
+            {_myAccount.email}
           </Typography>
         </Box>
 
@@ -129,7 +138,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
         <Divider sx={{ borderStyle: 'dashed' }} />
 
         <Box sx={{ p: 1 }}>
-          <Button fullWidth color="error" size="medium" variant="text">
+          <Button fullWidth color="error" size="medium" variant="text" onClick={handleLogout}>
             Logout
           </Button>
         </Box>
