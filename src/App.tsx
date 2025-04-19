@@ -1,53 +1,59 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Navbar from './components/Navbar';
-import LoginPage from './pages/LoginPage';
-import ClientDashboard from './pages/ClientDashboard';
-import AgentDashboard from './pages/AgentDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import 'src/global.css';
 
-const App = () => {
-  return (
-    <AuthProvider>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={
-            <ProtectedRoute allowedRoles={['client', 'agent', 'admin']}>
-              <NavigateToRoleDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/client" element={
-            <ProtectedRoute allowedRoles={['client']}>
-              <ClientDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/agent" element={
-            <ProtectedRoute allowedRoles={['agent']}>
-              <AgentDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/admin" element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </Router>
-    </AuthProvider>
+import { useEffect } from 'react';
+
+import Fab from '@mui/material/Fab';
+
+import { usePathname } from 'src/routes/hooks';
+
+import { ThemeProvider } from 'src/theme/theme-provider';
+
+import { Iconify } from 'src/components/iconify';
+
+// ----------------------------------------------------------------------
+
+type AppProps = {
+  children: React.ReactNode;
+};
+
+export default function App({ children }: AppProps) {
+  useScrollToTop();
+
+  const githubButton = () => (
+    <Fab
+      size="medium"
+      aria-label="Github"
+      href="https://github.com/minimal-ui-kit/material-kit-react"
+      sx={{
+        zIndex: 9,
+        right: 20,
+        bottom: 20,
+        width: 48,
+        height: 48,
+        position: 'fixed',
+        bgcolor: 'grey.800',
+      }}
+    >
+      <Iconify width={24} icon="socials:github" sx={{ '--color': 'white' }} />
+    </Fab>
   );
-};
 
-const NavigateToRoleDashboard = () => {
-  const { role } = useAuth();
-  switch (role) {
-    case 'client': return <Navigate to="/client" />;
-    case 'agent': return <Navigate to="/agent" />;
-    case 'admin': return <Navigate to="/admin" />;
-    default: return <Navigate to="/login" />;
-  }
-};
+  return (
+    <ThemeProvider>
+      {children}
+      {githubButton()}
+    </ThemeProvider>
+  );
+}
 
-export default App;
+// ----------------------------------------------------------------------
+
+function useScrollToTop() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
