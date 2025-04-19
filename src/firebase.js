@@ -1,8 +1,7 @@
-// firebase.ts
+// src/firebase.js
+import { getAuth } from "firebase/auth";  // Import Firebase Auth
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -15,6 +14,9 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-getAnalytics(app); // optional if you want analytics
 
-export default app; // ✅ this is what your dashboard.tsx was expecting
+// Initialize Firebase Auth
+const firebaseAuth = getAuth(app);
+
+// Export firebaseAuth so it can be used in other files
+export { firebaseAuth };
