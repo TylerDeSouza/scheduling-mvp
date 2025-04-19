@@ -1,66 +1,48 @@
 import type { RouteObject } from 'react-router';
 
-import { lazy, Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
-import { varAlpha } from 'minimal-shared/utils';
+import { Outlet, Navigate } from 'react-router-dom';
 
-import Box from '@mui/material/Box';
-import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
-
+import BlogPage        from 'src/pages/blog';
+import UserPage        from 'src/pages/user';
 import { AuthLayout } from 'src/layouts/auth';
+import SignInPage      from 'src/pages/sign-in';
+import ProductsPage    from 'src/pages/products';
+import DashboardPage   from 'src/pages/dashboard';
+import Page404         from 'src/pages/page-not-found';
 import { DashboardLayout } from 'src/layouts/dashboard';
+import AgentDashboard  from 'src/pages/dashboard-agent';
+import AdminDashboard  from 'src/pages/dashboard-admin';
+import ClientDashboard from 'src/pages/dashboard-client';
 
-import ProtectedRoute from './components/ProtectedRoute';  // ← new import
-
-// Lazy‑loaded pages
-export const DashboardPage = lazy(() => import('src/pages/dashboard'));
-export const BlogPage      = lazy(() => import('src/pages/blog'));
-export const UserPage      = lazy(() => import('src/pages/user'));
-export const SignInPage    = lazy(() => import('src/pages/sign-in'));
-export const ProductsPage  = lazy(() => import('src/pages/products'));
-export const Page404       = lazy(() => import('src/pages/page-not-found'));
-
-const renderFallback = () => (
-  <Box
-    sx={{
-      display:       'flex',
-      flex:          '1 1 auto',
-      alignItems:    'center',
-      justifyContent:'center',
-    }}
-  >
-    <LinearProgress
-      sx={{
-        width:      1,
-        maxWidth:   320,
-        bgcolor:    (theme) => varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
-        [`& .${linearProgressClasses.bar}`]: { bgcolor: 'text.primary' },
-      }}
-    />
-  </Box>
-);
+import ProtectedRoute from './components/ProtectedRoute';
 
 export const routesSection: RouteObject[] = [
-  // All dashboard routes now require authentication
   {
     element: (
       <ProtectedRoute>
         <DashboardLayout>
-          <Suspense fallback={renderFallback()}>
-            <Outlet />
-          </Suspense>
+          <Outlet />
         </DashboardLayout>
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
+      // optional: redirect /dashboard → /dashboard/client
+      { path: 'dashboard', element: <Navigate to="dashboard/client" replace /> },
+
+      // role‑specific dashboards
+      { path: 'dashboard/client', element: <ClientDashboard /> },
+      { path: 'dashboard/agent',  element: <AgentDashboard /> },
+      { path: 'dashboard/admin',  element: <AdminDashboard /> },
+
+      // legacy generic dashboard (if you still need it)
+      { path: '', element: <DashboardPage /> },
+
+      // other protected pages
+      { path: 'blog',     element: <BlogPage />     },
       { path: 'user',     element: <UserPage />     },
       { path: 'products', element: <ProductsPage /> },
-      { path: 'blog',     element: <BlogPage />     },
     ],
   },
-
-  // Public routes
   {
     path: 'sign-in',
     element: (
@@ -69,12 +51,6 @@ export const routesSection: RouteObject[] = [
       </AuthLayout>
     ),
   },
-  {
-    path: '404',
-    element: <Page404 />,
-  },
-  {
-    path: '*',
-    element: <Page404 />,
-  },
+  { path: '404', element: <Page404 /> },
+  { path: '*',   element: <Page404 /> },
 ];
